@@ -62,12 +62,12 @@ impl Dfgm {
     }
 }
 
-
 pub enum Component {
     Root,
     Eps(Eps),
     Adcs(Adcs),
     Dfgm(Dfgm),
+    GroundStation,
 }
 
 pub fn init() -> Vec<Component> {
@@ -79,18 +79,20 @@ pub fn init() -> Vec<Component> {
             message::PAYLOAD_EPS => components.push(Component::Eps(Eps::configure())),
             message::PAYLOAD_ADCS => components.push(Component::Adcs(Adcs::configure(7))),
             message::PAYLOAD_DFGM => components.push(Component::Dfgm(Dfgm::configure())),
+            message::PAYLOAD_GNDSTN => components.push(Component::GroundStation),
             _ => components.push(Component::Root),
         }
     }
- 
-   components
+
+    components
 }
-    
+
 pub fn dispatch_cmd(target: &mut Component, cmd: &Command) -> Result<Message, &'static str> {
     match target {
         Component::Eps(eps) => eps.dispatch(cmd),
         Component::Adcs(adcs) => adcs.dispatch(cmd),
         Component::Dfgm(dfgm) => dfgm.dispatch(cmd),
-        _ => Err("Unrecognized component")
+        Component::GroundStation => Ok(cmd.status_msg(76)),
+        _ => Err("Unrecognized component"),
     }
 }
