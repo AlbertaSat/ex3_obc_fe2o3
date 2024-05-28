@@ -67,6 +67,7 @@ pub struct Command {
 
 impl Command {
     #[allow(dead_code)]
+    /// Convert a message (array of bytes) into a Command struct [handle uplink GS -> OBC] 
     pub fn deserialize(msg: &Message) -> Command {
         let len: usize = usize::from(msg[MSG_LEN_IX]);
         let mut cmd = Command {
@@ -86,6 +87,7 @@ impl Command {
     }
 
     #[allow(dead_code)]
+    /// Convert a Command struct into an array of bytes [handle downlink OBC -> GS]
     pub fn serialize(&self) -> Message {
         let mut msg: Message = [0; MSG_LEN];
         msg[MSG_LEN_IX] = (self.oplen + MSG_OPDATA_OFF) as u8;

@@ -6,6 +6,10 @@ use crate::message::Message;
 mod message;
 mod component;
 
+mod DFGM;
+pub use DFGM::dfgm_interface::*;
+pub use DFGM::dfgm_handler::*;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
