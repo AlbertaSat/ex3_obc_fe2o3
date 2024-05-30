@@ -8,12 +8,14 @@ TODO - Implement the dispatch function to handle the DFGM command to toggle 'lis
 */
 use crate::DFGMInterface;
 
-use crate::message::{Command, Message};
+use crate::cmd::{Command, Message};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 use std::fs::OpenOptions;
 use std::io::prelude::*;
+
+
 
 const DFGM_DATA_DIR_PATH: &str = "dfgm_data";
 

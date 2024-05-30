@@ -1,5 +1,5 @@
 use crate::{
-    message::{self, Command, Message},
+    cmd::{self, Command, Message},
     DFGM::dfgm_handler,
 };
 
@@ -50,12 +50,12 @@ pub enum Component {
 pub fn init() -> Vec<Component> {
     let mut components: Vec<Component> = Vec::new();
 
-    for (index, p) in message::PAYLOADS.iter().enumerate() {
+    for (index, p) in cmd::PAYLOADS.iter().enumerate() {
         assert_eq!(index, p.id, "payload index/id mismatch");
         match p.name {
-            message::PAYLOAD_EPS => components.push(Component::Eps(Eps::configure())),
-            message::PAYLOAD_ADCS => components.push(Component::Adcs(Adcs::configure(7))),
-            message::PAYLOAD_DFGM => components.push(Component::Dfgm(dfgm_handler::Dfgm::configure())),
+            cmd::PAYLOAD_EPS => components.push(Component::Eps(Eps::configure())),
+            cmd::PAYLOAD_ADCS => components.push(Component::Adcs(Adcs::configure(7))),
+            cmd::PAYLOAD_DFGM => components.push(Component::Dfgm(dfgm_handler::Dfgm::configure())),
             _ => components.push(Component::Root),
         }
     }
