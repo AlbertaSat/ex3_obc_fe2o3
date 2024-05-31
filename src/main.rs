@@ -1,10 +1,14 @@
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Read, Write};
 use clap::Parser;
-use crate::message::Message;
+use crate::cmd::Message;
 
-mod message;
+mod cmd;
 mod component;
+
+mod DFGM;
+pub use DFGM::dfgm_interface::*;
+pub use DFGM::dfgm_handler::*;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -50,7 +54,7 @@ fn main() {
 }
 
 fn handle_client(mut stream: TcpStream, components: &mut [component::Component]) {
-    let mut data = [0; message::MSG_LEN];
+    let mut data = [0; cmd::MSG_LEN];
     while match stream.read(&mut data) {
         Ok(size) => {
             // echo everything!
@@ -62,7 +66,7 @@ fn handle_client(mut stream: TcpStream, components: &mut [component::Component])
                     println!("read {size} bytes");
                     let response = handle_message(&data, components);
                     match stream.write(&response) {
-                        Ok(wlen) => if size < message::MSG_LEN {
+                        Ok(wlen) => if size < cmd::MSG_LEN {
                             println!("short write: {wlen}");
                             false
                         }
@@ -86,7 +90,7 @@ fn handle_client(mut stream: TcpStream, components: &mut [component::Component])
 }
 
 fn handle_message(msg: &Message, components: &mut [component::Component]) -> Message {
-    let cmd = message::Command::deserialize(msg);
+    let cmd = cmd::Command::deserialize(msg);
 
     println!("handle_message: payload {0}, opcode {1}", cmd.payload, cmd.opcode);
 

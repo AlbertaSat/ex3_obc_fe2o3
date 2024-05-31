@@ -1,4 +1,7 @@
-use crate::message::{self, Command, Message};
+use crate::{
+    cmd::{self, Command, Message},
+    DFGM::dfgm_handler,
+};
 
 pub struct Eps {
     uart: u8,
@@ -37,60 +40,34 @@ impl Adcs {
     }
 }
 
-pub struct Dfgm {
-    port: u16,
-    state: u8,
-}
-
-impl Dfgm {
-    fn configure() -> Dfgm {
-        Dfgm { port: 1, state: 0 }
-    }
-
-    fn dispatch(&mut self, cmd: &Command) -> Result<Message, &'static str> {
-        if cmd.oplen > 0 {
-            let arg = std::str::from_utf8(&cmd.opdata).unwrap();
-            println!("dfgm op data: {0}", arg);
-            match arg.parse::<u16>() {
-                Ok(i) => self.port = i,
-                Err(s) => println!("Parse failed: {}", s),
-            }
-        }
-        println!("Dfgm: opcode {}, port: {}", cmd.opcode, self.port);
-        self.state += 1;
-        Ok(cmd.status_msg(self.state))
-    }
-}
-
-
 pub enum Component {
     Root,
     Eps(Eps),
     Adcs(Adcs),
-    Dfgm(Dfgm),
+    Dfgm(dfgm_handler::Dfgm),
 }
 
 pub fn init() -> Vec<Component> {
     let mut components: Vec<Component> = Vec::new();
 
-    for (index, p) in message::PAYLOADS.iter().enumerate() {
+    for (index, p) in cmd::PAYLOADS.iter().enumerate() {
         assert_eq!(index, p.id, "payload index/id mismatch");
         match p.name {
-            message::PAYLOAD_EPS => components.push(Component::Eps(Eps::configure())),
-            message::PAYLOAD_ADCS => components.push(Component::Adcs(Adcs::configure(7))),
-            message::PAYLOAD_DFGM => components.push(Component::Dfgm(Dfgm::configure())),
+            cmd::PAYLOAD_EPS => components.push(Component::Eps(Eps::configure())),
+            cmd::PAYLOAD_ADCS => components.push(Component::Adcs(Adcs::configure(7))),
+            cmd::PAYLOAD_DFGM => components.push(Component::Dfgm(dfgm_handler::Dfgm::configure())),
             _ => components.push(Component::Root),
         }
     }
- 
-   components
+
+    components
 }
-    
+
 pub fn dispatch_cmd(target: &mut Component, cmd: &Command) -> Result<Message, &'static str> {
     match target {
         Component::Eps(eps) => eps.dispatch(cmd),
         Component::Adcs(adcs) => adcs.dispatch(cmd),
         Component::Dfgm(dfgm) => dfgm.dispatch(cmd),
-        _ => Err("Unrecognized component")
+        _ => Err("Unrecognized component"),
     }
 }
